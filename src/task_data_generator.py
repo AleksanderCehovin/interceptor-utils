@@ -36,6 +36,12 @@ SLEEP_S = 0.005
 # STD OUT PRINT INTERVAL
 PRINT_INT_FRAMES = 500
 
+# Choose betwee PUSH-PULL or PUB-SUB
+USE_PUSH_PULL = False
+GUI_TOPIC = "gui"
+
+
+
 def get_spot_number(index,period):
     return int(10000*abs(math.sin(index/period)))
 
@@ -47,6 +53,12 @@ def get_quality(index,period):
     value = math.cos(index/period)
     return 100*abs(value*value)
 
+def get_data(run_no,img_no,no_spots,quality,hres,indexed):
+    data=u"run {} frame {} result  {} {} {} {} {} {} {} {}  mapping {}".format(run_no,img_no,no_spots,4,quality,hres,7,8,indexed,10,11)
+    if not USE_PUSH_PULL:
+        data=GUI_TOPIC + " " + data
+    return data
+
 try:
     raw_input
 except NameError:
@@ -57,10 +69,19 @@ except NameError:
 context = zmq.Context()
 
 # Setup socket for communication
-sender = context.socket(zmq.PUSH)
-sender.connect("tcp://localhost:{}".format(PORT))
+if USE_PUSH_PULL:
+    sender = context.socket(zmq.PUSH)
+    sender.connect("tcp://localhost:{}".format(PORT))
+else:
+    sender = context.socket(zmq.PUB)
+    sender.bind("tcp://*:{}".format(PORT))
+
 print("******************************************\n")
 print("Pipeline connected to tcp://localhost:{}\n".format(PORT))
+if USE_PUSH_PULL:
+    print("ZMQ Pattern PUSH-PULL\n")
+else:
+    print("ZMQ Pattern PUB-SUB\n")
 print("******************************************\n")
 
 #Wait for user confirmation before starting to push data
@@ -88,7 +109,7 @@ for i in range(0,N):
     hres = get_res(img_no,period)
     quality = get_quality(img_no,period)
     #Define message string to be sent to GUI. This is the Interceptor GUI format.
-    data=u"run {} frame {} result  {} {} {} {} {} {} {} {}  mapping {}".format(run_no,img_no,no_spots,4,quality,hres,7,8,indexed,10,11)
+    data = get_data(run_no,img_no,no_spots,quality,hres,indexed)
     sender.send_string(data)
     img_no+=1    
     #Handle FPS count

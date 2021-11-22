@@ -15,10 +15,10 @@ import random
 #Total number of data points. I think this data
 #allocated memory on the GUI side, don't go astronomical
 #with this variable.
-N=150000
+N=50000000
 
 #Number of data points per run
-RUN_LENGTH=15000
+RUN_LENGTH=4000000
 
 #Maximum number of runs. Each run generates a tab in the GUI, which
 #allocates memory. Don't set this to astronomical values.
@@ -31,7 +31,7 @@ INDEXED_RATE=20
 PORT=5557
 
 # Sleep time between frames. Main parameter for effective FPS.
-SLEEP_S = 0.005
+SLEEP_S = 0.002
 
 # STD OUT PRINT INTERVAL
 PRINT_INT_FRAMES = 500
@@ -40,6 +40,8 @@ PRINT_INT_FRAMES = 500
 USE_PUSH_PULL = False
 GUI_TOPIC = "gui"
 
+#Image number step
+IMG_NO_STEP = 1
 
 
 def get_spot_number(index,period):
@@ -111,7 +113,7 @@ for i in range(0,N):
     #Define message string to be sent to GUI. This is the Interceptor GUI format.
     data = get_data(run_no,img_no,no_spots,quality,hres,indexed)
     sender.send_string(data)
-    img_no+=1    
+    img_no+=IMG_NO_STEP   
     #Handle FPS count
     fps_counter += 1
     if fps_counter % PRINT_INT_FRAMES == 0:

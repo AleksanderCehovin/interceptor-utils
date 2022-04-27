@@ -15,15 +15,14 @@ import random
 #Total number of data points. I think this data
 #allocated memory on the GUI side, don't go astronomical
 #with this variable.
-N=50000000
+N=400000
 
 #Number of data points per run
-RUN_LENGTH=4000000
+RUN_LENGTH=20000
 
 #Maximum number of runs. Each run generates a tab in the GUI, which
 #allocates memory. Don't set this to astronomical values.
-MAX_NO_RUNS=10
-
+MAX_NO_RUNS=20
 #Rate of indexed frames as a modulo number 
 INDEXED_RATE=20
 
@@ -31,7 +30,7 @@ INDEXED_RATE=20
 PORT=5557
 
 # Sleep time between frames. Main parameter for effective FPS.
-SLEEP_S = 0.002
+SLEEP_S = 0.005
 
 # STD OUT PRINT INTERVAL
 PRINT_INT_FRAMES = 500
@@ -49,14 +48,15 @@ def get_spot_number(index,period):
 
 def get_res(index,period):
     value = math.sin(index/period)
-    return 5*abs(value*value*value)
+    return 5*abs(value*value*value)+1.0
 
 def get_quality(index,period):
     value = math.cos(index/period)
     return 100*abs(value*value)
 
-def get_data(run_no,img_no,no_spots,quality,hres,indexed):
-    data=u"run {} frame {} result  {} {} {} {} {} {} {} {}  mapping {}".format(run_no,img_no,no_spots,4,quality,hres,7,8,indexed,10,11)
+def get_data(run_no,img_no,no_spots,quality,hres,indexed,sample_string="sample-id-custom"):
+    data=u"run {} frame {} result  {} {} {} {} {} {} {} {}  mapping {}".format(run_no,
+            img_no,no_spots,4,quality,hres,7,8,indexed,10,sample_string)
     if not USE_PUSH_PULL:
         data=GUI_TOPIC + " " + data
     return data
@@ -99,9 +99,11 @@ fps_time_start = time.time()
 for i in range(0,N):
     #Set up a new run which generates a new tab in GUI
     if img_no % RUN_LENGTH == 0 and run_no <= MAX_NO_RUNS:
-        run_no += 1 
+        run_no += 1
+        sample_id = "sample-id-{}".format(run_no)
         img_no = 0 # Reset image counter each new run
         period = random.randint(100,500)
+        time.sleep(2)
     #Check if frame is indexed (True) or not (NA)
     indexed="NA"
     if img_no % INDEXED_RATE == 0:
@@ -111,7 +113,7 @@ for i in range(0,N):
     hres = get_res(img_no,period)
     quality = get_quality(img_no,period)
     #Define message string to be sent to GUI. This is the Interceptor GUI format.
-    data = get_data(run_no,img_no,no_spots,quality,hres,indexed)
+    data = get_data(run_no,img_no,no_spots,quality,hres,indexed,sample_id)
     sender.send_string(data)
     img_no+=IMG_NO_STEP   
     #Handle FPS count

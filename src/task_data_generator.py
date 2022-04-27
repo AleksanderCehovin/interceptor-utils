@@ -48,7 +48,7 @@ def get_spot_number(index,period):
 
 def get_res(index,period):
     value = math.sin(index/period)
-    return 5*abs(value*value*value)+1.0
+    return 5*abs(value*value*value)+1.25
 
 def get_quality(index,period):
     value = math.cos(index/period)

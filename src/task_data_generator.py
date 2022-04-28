@@ -18,7 +18,7 @@ import random
 N=400000
 
 #Number of data points per run
-RUN_LENGTH=20000
+RUN_LENGTH=1000
 
 #Maximum number of runs. Each run generates a tab in the GUI, which
 #allocates memory. Don't set this to astronomical values.
@@ -54,9 +54,9 @@ def get_quality(index,period):
     value = math.cos(index/period)
     return 100*abs(value*value)
 
-def get_data(run_no,img_no,no_spots,quality,hres,indexed,sample_string="sample-id-custom"):
+def get_data(sample_id, run_no,img_no,no_spots,quality,hres,indexed="NA"):
     data=u"run {} frame {} result  {} {} {} {} {} {} {} {}  mapping {}".format(run_no,
-            img_no,no_spots,4,quality,hres,7,8,indexed,10,sample_string)
+            img_no,no_spots,4,quality,hres,7,8,indexed,10,sample_id)
     if not USE_PUSH_PULL:
         data=GUI_TOPIC + " " + data
     return data
@@ -93,6 +93,7 @@ print("Sending data to GUI...")
 
 #Send a data string N times to GUI
 run_no=0
+sample_no = 0
 img_no=0
 fps_counter=1
 fps_time_start = time.time()
@@ -100,7 +101,11 @@ for i in range(0,N):
     #Set up a new run which generates a new tab in GUI
     if img_no % RUN_LENGTH == 0 and run_no <= MAX_NO_RUNS:
         run_no += 1
-        sample_id = "sample-id-{}".format(run_no)
+        #run_no = 1 # DEBUG
+        sample_no = run_no//3
+        #Very Long Sample ID
+        #sample_id = "sample-id-{}".format(sample_no)
+        sample_id = "sample-to-long-name-but-why-not-id-{}".format(sample_no)
         img_no = 0 # Reset image counter each new run
         period = random.randint(100,500)
         time.sleep(2)
@@ -113,7 +118,7 @@ for i in range(0,N):
     hres = get_res(img_no,period)
     quality = get_quality(img_no,period)
     #Define message string to be sent to GUI. This is the Interceptor GUI format.
-    data = get_data(run_no,img_no,no_spots,quality,hres,indexed,sample_id)
+    data = get_data(sample_id,run_no,img_no,no_spots,quality,hres,indexed)
     sender.send_string(data)
     img_no+=IMG_NO_STEP   
     #Handle FPS count

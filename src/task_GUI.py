@@ -18,7 +18,8 @@ PORT=5557
 SLEEP_S = 0
 
 #Print all frames?
-PRINT_ALL = False
+#PRINT_ALL = False
+PRINT_ALL = True
 PRINT_DELIM = "***************************************************"
 
 #Print Interval in frames
@@ -60,8 +61,8 @@ while True:
 
     if PRINT_ALL:
         #For high frame rates it's a bad idea
-        #sys.stdout.write("Rx: " + s + "\n")
-        #sys.stdout.flush()
+        sys.stdout.write("Rx: " + s + "\n")
+        sys.stdout.flush()
         pass
 
     fps_counter += 1

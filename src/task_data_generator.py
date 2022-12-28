@@ -36,7 +36,10 @@ SLEEP_S = 0.005
 PRINT_INT_FRAMES = 500
 
 # Choose betwee PUSH-PULL or PUB-SUB
-USE_PUSH_PULL = False
+# The PUSH-PULL example has been modified to support indirect
+# filtering of the throughput by manipulating the water marks.
+#USE_PUSH_PULL = False
+USE_PUSH_PULL = True
 GUI_TOPIC = "gui"
 
 #Image number step
@@ -73,6 +76,12 @@ context = zmq.Context()
 # Setup socket for communication
 if USE_PUSH_PULL:
     sender = context.socket(zmq.PUSH)
+    #Set output watermarks for driver level filtering
+    #that reduces the throughput.
+    #Number of send messages, SNDHWM
+    #Byte size of output buffer, SNDBUF
+    sender.setsockopt(zmq.SNDHWM,1)
+    sender.setsockopt(zmq.SNDBUF,1)
     sender.connect("tcp://localhost:{}".format(PORT))
 else:
     sender = context.socket(zmq.PUB)
@@ -119,7 +128,23 @@ for i in range(0,N):
     quality = get_quality(img_no,period)
     #Define message string to be sent to GUI. This is the Interceptor GUI format.
     data = get_data(sample_id,run_no,img_no,no_spots,quality,hres,indexed)
-    sender.send_string(data)
+    try:
+        if USE_PUSH_PULL:
+            sender.send_string(data,zmq.NOBLOCK)
+        else:
+            sender.send_string(data)
+    except zmq.ZMQError:
+        pass
+        #When output queue is full, we intentionally throw
+        #away the message, as a driver-level to reduce the
+        #stream without explicit coordination.
+        #print("ZMQ Exception {} {}".format(run_no, img_no))
+    except Exception as err:
+        print("Unexpected Error {}, {}".format(type(err),err))
+        assert(False)
+    else:
+        print("Sent Run no. = {}, frame =  {}".format(run_no, img_no))
+
     img_no+=IMG_NO_STEP   
     #Handle FPS count
     fps_counter += 1
@@ -129,5 +154,5 @@ for i in range(0,N):
         fps_time_start = time.time()
         fps_counter = 0
     time.sleep(SLEEP_S)
-# Give 0MQ time to deliver
+# Give ZMQ time to deliver
 time.sleep(1)

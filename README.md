@@ -1,6 +1,12 @@
 # interceptor-utils
-Utilities for running parts of the code in https://github.com/ssrl-px/interceptor. For now, the main interest is to break-out the GUI and and use it with other back-ends.
+The original purpose of this code was for simulation utilities for the Interceptor
+GUI at
 
-Experimental tests for Max IV, Lund.
+https://github.com/AleksanderCehovin/interceptor.git
 
-aleksander.cehovin@maxiv.lu.se
+The repository above now includes this simulation code in its repository.
+
+Here, I'm now using it for experiments, where the current one is to try to use
+a ZMQ PUSH-PULL connection as a filtering mechanism where the underlying buffers
+are intentionally under-dimensioned to create low frequency preview streams out of
+a high-throughput source.

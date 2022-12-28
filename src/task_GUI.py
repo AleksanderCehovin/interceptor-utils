@@ -15,7 +15,8 @@ import zmq
 PORT=5557
 
 #Sleep time between collection attempts
-SLEEP_S = 0
+#SLEEP_S = 0
+SLEEP_S = 0.5
 
 #Print all frames?
 #PRINT_ALL = False
@@ -26,7 +27,8 @@ PRINT_DELIM = "***************************************************"
 PRINT_INT_FRAMES = 500
 
 #Choose PUSH-PULL or PUB_SUB
-USE_PUSH_PULL = False
+#USE_PUSH_PULL = False
+USE_PUSH_PULL = True
 GUI_TOPIC = "gui"
 
 
@@ -35,6 +37,9 @@ context = zmq.Context()
 # Socket to receive messages on
 if USE_PUSH_PULL:
     receiver = context.socket(zmq.PULL)
+    #Set receiver high watermark
+    receiver.setsockopt(zmq.RCVHWM,1)
+    receiver.setsockopt(zmq.RCVBUF,1)
     receiver.connect("tcp://localhost:{}".format(PORT))
     receiver.bind("tcp://*:{}".format(PORT))
 else:
@@ -54,7 +59,11 @@ fps_counter = 0
 fps_time_start = time.time()
 # Process tasks forever
 while True:
-    s = receiver.recv_string()
+    try:
+        s = receiver.recv_string()
+    except:
+        print("Exception")
+
     if not USE_PUSH_PULL:
         s = s[(len(GUI_TOPIC)+1):]
 

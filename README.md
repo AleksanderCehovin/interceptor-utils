@@ -6,7 +6,7 @@ https://github.com/AleksanderCehovin/interceptor.git
 
 The repository above now includes this simulation code in its repository.
 
-Here, I'm now using it for experiments, where the current one is to try to use
-a ZMQ PUSH-PULL connection as a filtering mechanism where the underlying buffers
+Here, I'm now using it for experiments. Currently I'm testing whether a ZMQ PUSH-PULL 
+connection can act as a filtering mechanism when the underlying buffers
 are intentionally under-dimensioned to create low frequency preview streams out of
 a high-throughput source.
